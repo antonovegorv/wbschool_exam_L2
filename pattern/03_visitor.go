@@ -1,7 +1,115 @@
-package pattern
+package main
+
+import "fmt"
 
 /*
 	Реализовать паттерн «посетитель».
 Объяснить применимость паттерна, его плюсы и минусы, а также реальные примеры использования данного примера на практике.
 	https://en.wikipedia.org/wiki/Visitor_pattern
 */
+
+func main() {
+	square := &square{side: 2}
+	circle := &circle{radius: 3}
+	rectangle := &rectangle{l: 2, b: 3}
+
+	areaCalculator := &areaCalculator{}
+
+	square.accept(areaCalculator)
+	circle.accept(areaCalculator)
+	rectangle.accept(areaCalculator)
+
+	fmt.Println()
+
+	middleCoordinates := &middleCoordinates{}
+
+	square.accept(middleCoordinates)
+	circle.accept(middleCoordinates)
+	rectangle.accept(middleCoordinates)
+}
+
+// Visitor Interface
+type visitor interface {
+	visitForSquare(*square)
+	visitForCircle(*circle)
+	visitForrectangle(*rectangle)
+}
+
+// Visitor that calculates area
+type areaCalculator struct {
+	area int
+}
+
+func (a *areaCalculator) visitForSquare(s *square) {
+	fmt.Println("Calculating area for square")
+}
+
+func (a *areaCalculator) visitForCircle(s *circle) {
+	fmt.Println("Calculating area for circle")
+}
+func (a *areaCalculator) visitForrectangle(s *rectangle) {
+	fmt.Println("Calculating area for rectangle")
+}
+
+// Visitor that calculates middle point of a shape
+type middleCoordinates struct {
+	x int
+	y int
+}
+
+func (a *middleCoordinates) visitForSquare(s *square) {
+	fmt.Println("Calculating middle point coordinates for square")
+}
+
+func (a *middleCoordinates) visitForCircle(c *circle) {
+	fmt.Println("Calculating middle point coordinates for circle")
+}
+func (a *middleCoordinates) visitForrectangle(t *rectangle) {
+	fmt.Println("Calculating middle point coordinates for rectangle")
+}
+
+// Shape Interface
+type shape interface {
+	getType() string
+	accept(visitor)
+}
+
+// Square
+type square struct {
+	side int
+}
+
+func (s *square) accept(v visitor) {
+	v.visitForSquare(s)
+}
+
+func (s *square) getType() string {
+	return "Square"
+}
+
+// Circle
+type circle struct {
+	radius int
+}
+
+func (c *circle) accept(v visitor) {
+	v.visitForCircle(c)
+}
+
+func (c *circle) getType() string {
+	return "Circle"
+}
+
+// Rectangle
+type rectangle struct {
+	l int
+	b int
+}
+
+func (t *rectangle) accept(v visitor) {
+	v.visitForrectangle(t)
+}
+
+func (t *rectangle) getType() string {
+	return "rectangle"
+}
