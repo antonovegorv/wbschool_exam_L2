@@ -68,7 +68,7 @@ func cut(str string, f int, d string, s bool) (string, bool) {
 	columns := strings.Split(str, d)
 	if f < len(columns) {
 		return columns[f], true
-	} else {
-		return "", false
 	}
+
+	return "", false
 }
