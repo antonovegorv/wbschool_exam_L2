@@ -1,5 +1,13 @@
 package main
 
+import (
+	"flag"
+	"fmt"
+	"log"
+
+	"github.com/antonovegorv/wbschool_exam_L2/develop/dev05/grep"
+)
+
 /*
 === Утилита grep ===
 
@@ -19,5 +27,31 @@ package main
 */
 
 func main() {
+	optionsInt := make(map[string]*int)
+	optionsBool := make(map[string]*bool)
 
+	optionsInt["A"] = flag.Int("A", 0, "print NUM lines of trailing context after matching lines")
+	optionsInt["B"] = flag.Int("B", 0, "print NUM lines of leading context before matching lines")
+	optionsInt["C"] = flag.Int("C", 0, "print NUM lines of output context")
+
+	optionsBool["c"] = flag.Bool("c", false, "output amount of lines")
+	optionsBool["i"] = flag.Bool("i", false, "ignore case distinctions in patterns and input data, so that characters that differ only in case  match each other")
+	optionsBool["v"] = flag.Bool("v", false, "invert the sense of matching, to select non-matching lines")
+	optionsBool["F"] = flag.Bool("F", false, "interpret PATTERNS as fixed strings, not regular expressions")
+	optionsBool["n"] = flag.Bool("n", false, "prefix each line of output with the 1-based line number within its input file")
+
+	flag.Parse()
+
+	pattern := flag.Arg(0)
+	filename := flag.Arg(1)
+
+	if pattern == "" || filename == "" {
+		fmt.Println("Please, be sure to provide both PATTERN and FILENAME!")
+		return
+	}
+
+	g := grep.New(pattern, filename, optionsInt, optionsBool)
+	if err := g.Start(); err != nil {
+		log.Fatalln(err)
+	}
 }
