@@ -1,5 +1,12 @@
 package main
 
+import (
+	"fmt"
+	"os"
+
+	"github.com/antonovegorv/wbschool_exam_L2/develop/dev01/datetime"
+)
+
 /*
 === Базовая задача ===
 
@@ -12,6 +19,24 @@ package main
 Программа должна проходить проверки go vet и golint.
 */
 
-func main() {
+const layoutRFC1123 = "Mon, 02 Jan 2006 15:04:05 MST"
+const exitFailure = 1
 
+const hostname = "1.ru.pool.ntp.org"
+
+func main() {
+	// Create new datetime instance.
+	dt := datetime.New(hostname)
+
+	lt := dt.GetLocal()      // Get local time.
+	ct, err := dt.GetExact() // Get exact time using ntp.
+
+	// Check for error.
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v; \n", err)
+		os.Exit(exitFailure)
+	}
+
+	fmt.Printf("Local time: %v; \n", lt.Format(layoutRFC1123))
+	fmt.Printf("Current time: %v; \n", ct.Format(layoutRFC1123))
 }
