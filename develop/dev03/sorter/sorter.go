@@ -4,10 +4,26 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+func humanReadableToNumber(str string) float64 {
+	multipliers := map[string]float64{
+		"B": 1,
+		"K": 1024,
+		"M": 1024 * 1024,
+		"G": 1024 * 1024 * 1024,
+		"T": 1024 * 1024 * 1024 * 1024,
+		"P": 1024 * 1024 * 1024 * 1024,
+	}
+
+	num, _ := strconv.ParseFloat(str[:len(str)-1], 64)
+
+	return num * multipliers[string(str[len(str)-1])]
+}
 
 func getMonths() map[string]int {
 	return map[string]int{
@@ -117,17 +133,11 @@ func (ms *MonthSort) Sort(data map[string][]string) []string {
 	}
 
 	sort.Strings(strKeys)
-
-	for i := 0; i < len(monthKeys); i++ {
-		for j := 0; j < len(monthKeys)-i-1; j++ {
-			m1 := strings.ToLower(monthKeys[j])
-			m2 := strings.ToLower(monthKeys[j+1])
-
-			if getMonths()[m1] > getMonths()[m2] {
-				monthKeys[j], monthKeys[j+1] = monthKeys[j+1], monthKeys[j]
-			}
-		}
-	}
+	sort.Slice(monthKeys, func(i, j int) bool {
+		m1 := strings.ToLower(monthKeys[i])
+		m2 := strings.ToLower(monthKeys[j])
+		return getMonths()[m1] < getMonths()[m2]
+	})
 
 	sorted := make([]string, 0)
 
@@ -147,7 +157,37 @@ type NumericSuffixSort struct{}
 
 // Sort — sorts by numeric and suffix.
 func (nss *NumericSuffixSort) Sort(data map[string][]string) []string {
-	return nil
+	regex := regexp.MustCompile(`^(\d+\.*\d*[B|K|M|G|T|P]{1})$`)
+
+	numSufKeys := make([]string, 0, len(data))
+	strKeys := make([]string, 0, len(data))
+
+	for k := range data {
+		if regex.MatchString(k) {
+			numSufKeys = append(numSufKeys, k)
+		} else {
+			strKeys = append(strKeys, k)
+		}
+	}
+
+	sort.Strings(strKeys)
+	sort.Slice(numSufKeys, func(i, j int) bool {
+		v1 := numSufKeys[i]
+		v2 := numSufKeys[j]
+
+		return humanReadableToNumber(v1) < humanReadableToNumber(v2)
+	})
+
+	sorted := make([]string, 0)
+	for _, k := range strKeys {
+		sorted = append(sorted, data[k]...)
+	}
+
+	for _, k := range numSufKeys {
+		sorted = append(sorted, data[k]...)
+	}
+
+	return sorted
 }
 
 // Sorter — main struct to store all fields and methods for sort util.
